@@ -22,7 +22,7 @@ ASEAN Trade Titan is a web-based visualization tool designed to analyze and comp
 ## Data source
 
 - The visualizations use data from cleaned.csv
-- All data is sourced from: https://resourcetrade.earth/?year=2018&importer=asean&units=value&autozoom=1
+- All data is sourced from: https://resourcetrade.earth/
 
 ## Acknowledgements
 - D3.js for the powerful data visualization library.
