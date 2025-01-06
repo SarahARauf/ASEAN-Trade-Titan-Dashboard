@@ -17,7 +17,7 @@ ASEAN Trade Titan is a web-based visualization tool designed to analyze and comp
 ## Pages
 
 - **Yearly Overview**: This page contains a chloropleth map showcasing trade imbalance as well as a total import trades value. Users are able to use the slider to see the data by year.
-- **Trade Analysis**: This page contains an analysis of trade data including export resource and imports and exports by year. Users are able to select two countries for comparison
+- **Country Comparison**: This page contains an analysis of trade data including export resource and imports and exports by year. Users are able to select two countries for comparison
 
 ## Data source
 
