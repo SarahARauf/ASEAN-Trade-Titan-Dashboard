@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- THIS IS CURRENTLY BEING MODIFIED AND IMPROVED FOR READABILITY AND REUSABILITY -->
+<head>
+    <meta charset="UTF-8">
+    <title>Combined Visualizations</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        /* Entire body */
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        /* Tool tip for all */
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            width: auto;
+            height: auto;
+            padding: 12px;
+            font: 14px sans-serif;
+            background: lightgrey;
+            border: 0;
+            border-radius: 4px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+
+         /* Navigation bar styling */
+         nav {
+            background-color: #333;
+            overflow: hidden;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        nav ul li {
+            display: inline;
+            margin-right: 10px;
+        }
+
+        nav ul li a {
+            display: inline-block;
+            color: white;
+            text-align: center;
+            padding: 14px 20px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #575757;
+        }
+
+        /* Styling for year slider */
+        .slider-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* margin-top: 0px; */
+            flex-wrap: wrap;
+        }
+
+        /* Actual Slider */
+        .slider {
+            width: 400px;
+        }
+
+        /* Treemap popup */
+        .popup {
+            background-color: rgba(255, 255, 255, 0.9);
+            /* Slightly transparent white */
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            visibility: hidden;
+            /* Initially hidden */
+            z-index: 20;
+            width: 410px;
+            /* Adjust width as needed */
+            height: 460px;
+            /* Adjust height as needed */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            cursor: pointer;
+        }
+
+        #treemap {
+            width: 400px;
+            height: 400px;
+            position: relative;
+        }
+
+        .map-barchart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .map_container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .map-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin: 10px;
+        }
+
+        .map_legend-wrapper {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Chloropleth Map */
+        .map-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* legend for chloropleth map */
+        /* .legend_year {
+            font-size: 12px;
+            margin-top: 10px;
+        } */
+
+        .legend_year {
+            font-size: 12px;
+            position: relative;
+            /* Change to relative positioning */
+            margin-top: -10px;
+            /* Adjust this value to move the legend closer to the title */
+            top: 10px;
+            /* Adjust this value to overlap with the map container */
+        }
+
+        .legend_year-title {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .legend_year-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+
+        .barchart-wrapper {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            margin: 10px;
+        }
+
+        /* Bar chart */
+        .barchart-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #barChart {
+            width: 700px;
+            height: 500px;
+        }
+
+        .bar {
+            fill: rgb(101, 188, 97);
+        }
+
+        .hovered {
+            fill: rgb(224, 70, 50);
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="text-align: center;">ASEAN TRADE TITAN</h1>
+    <h2 style="text-align: center;">Which ASEAN Country Leads the Global Trade Market?</h2>
+
+    <nav>
+        <ul>
+            <li><a href="Sarah.html">Yearly Overview</a></li>
+            <li><a href="TheasikaDiksha.html">Country Comparison</a></li>
+        </ul>
+    </nav>
+
+
+    <script src="southeast-asia.json"></script>
+
+    <!-- Title for the map -->
+    <div class="map-barchart-container">
+        <div class="map_container">
+            <div class="map-wrapper">
+                <div class="map-title" id="mapTitle">Yearly Trade Imbalance</div>
+                <!-- Legend for trade imbalance -->
+                <div class="legend_year">
+                    <div class="legend_year-title">Trade Imbalance (USD)</div>
+                    <canvas id="legendCanvas" width="300" height="10"></canvas>
+                    <div class="legend_year-labels">
+                        <span id="lowestImbalance"></span>
+                        <span id="highestImbalance" class="highest"></span>
+                    </div>
+                </div>
+                <!-- SVG for the map -->
+                <svg id="mapSvg"></svg>
+            </div>
+        </div>
+
+        <div class="barchart-wrapper">
+            <div class="barchart-title" id="barchartTitle">Total Yearly Import Trade Values (USD)</div>
+            <!-- SVG for the bar chart -->
+            <svg id="barChart"></svg>
+        </div>
+
+    </div>
+
+    <!-- Slider for selecting year -->
+    <div class="slider-container">
+        <input type="range" min="2015" max="2022" value="2022" step="1" class="slider" id="yearSlider">
+        <span id="yearLabel">2022</span>
+    </div>
+
+
+    <!-- Popup for treemap -->
+    <div class="popup" id="popup">
+        <span class="close-btn" onclick="closePopup()">×</span>
+        <div class="treemap-title">Sum of Export Value (2015-2022)</div>
+        <svg id="treemap"></svg>
+    </div>
+
+
+    <script>
+
+
+        // Setup SVG container for the map
+        var mapWidth = 500;
+        var mapHeight = 500;
+
+        var mapSvg = d3.select("#mapSvg")
+            .attr("width", mapWidth)
+            .attr("height", mapHeight)
+            // .style("position", "absolute")
+            .style("top", 200)
+            .style("left", 100);
+
+        // const margin = { top: 50, right: 40, bottom: 40, left: 120 },
+        //      width = 500 - margin.left - margin.right,
+        //      height = 500 - margin.top - margin.bottom;
+
+        // const mapSvg = d3.select("#mapSvg")
+        //         .attr("width", width + margin.left + margin.right)
+        //         .attr("height", height + margin.top + margin.bottom)
+        //         .append("g")
+        //         .attr("transform", `translate(${margin.left},${margin.top})`);
+
+
+
+
+        // const margin = { top: 50, right: 0, bottom: 40, left: 120 },
+        //      width = 500 - margin.left - margin.right,
+        //      height = 500 - margin.top - margin.bottom;
+
+        // const mapSvg = d3.select("#mapSvg")
+        //         .attr("width", width + margin.left + margin.right)
+        //         .attr("height", height + margin.top + margin.bottom)
+        //         .append("g")
+        //         .attr("transform", `translate(${margin.left},${margin.top})`);
+
+
+
+
+        var mapG = mapSvg.append("g");
+
+        // Projection setup for Southeast Asia
+        var projection = d3.geoMercator()
+            .center([0, 2])
+            .rotate([-105, 0])
+            .scale(550)
+            .translate([135, 300]);
+
+        var path = d3.geoPath()
+            .projection(projection);
+
+        function closePopup() {
+            d3.select("#popup").style("visibility", "hidden");
+        }
+
+        // Load CSV data and render the map
+        d3.csv("cleaned.csv").then(function (data) {
+            var tradeData = data.filter(d => d["Exporter region"] === "Southeast Asia" && d["Year"] >= 2015 && d["Year"] <= 2022);
+            var currentYear = d3.select("#yearSlider").property("value");
+            d3.select("#mapTitle").text(`Yearly Trade Imbalance For ${currentYear}`);
+            d3.select("#barchartTitle").text(`Total Yearly Import Trade Values (USD) For ${currentYear}`);
+
+
+            var highestImbalance = d3.max(tradeData, d => parseFloat(d["Trade Imbalance"]));
+            var lowestImbalance = d3.min(tradeData, d => parseFloat(d["Trade Imbalance"]));
+
+            var colorScale = d3.scaleDiverging()
+                .interpolator(d3.interpolateRdYlGn)  // Using a built-in interpolator that goes from red to green
+                .domain([lowestImbalance, 0, highestImbalance]);
+
+
+            function updateMap(year) {
+
+
+                const tooltip = d3.select("body").append("div")
+                    .attr("class", "tooltip");
+
+                mapG.selectAll("path")
+                    .data(sea_json.features)
+                    .join("path")
+                    .attr("fill", function (d) {
+                        var countryName = d.properties.name;
+                        var countryData = tradeData.find(entry => entry["Exporter"] === countryName && entry["Year"] == year);
+
+                        if (countryData) {
+                            return colorScale(parseFloat(countryData["Trade Imbalance"]));
+                        } else {
+                            return "#fff";
+                        }
+                    })
+                    .attr("stroke", "#333")
+                    .attr("d", path)
+                    .on("mouseover", function (event, d) {
+                        var countryName = d.properties.name;
+                        var countryData = tradeData.find(entry => entry["Exporter"] === countryName && entry["Year"] == year);
+
+                        tooltip.transition().duration(200).style("opacity", .9);
+                        tooltip.html("<strong>Country:</strong> " + countryName + "<br><strong>Trade Imbalance: </strong>" + (countryData ? countryData["Trade Imbalance"] : "No data"))
+                            .style("left", (event.pageX + 5) + "px")
+                            .style("top", (event.pageY - 28) + "px");
+                    })
+                    .on("mousemove", function (event) {
+                        tooltip.style("top", (event.pageY - 10) + "px")
+                            .style("left", (event.pageX + 10) + "px");
+                    })
+                    .on("mouseout", function () {
+                        tooltip.transition().duration(500).style("opacity", 0);
+                    })
+                    .on("dblclick", function (event, d) {
+                        var countryName = d.properties.name;
+
+                        if (countryName) {
+                            showPopup(countryName);
+
+                        } else {
+                            alert("No data available for " + countryName);
+                        }
+                    });
+            }
+
+            updateMap(currentYear);
+
+            var legendWidth = 300;
+            var legendHeight = 10;
+
+            var legendCanvas = d3.select("#legendCanvas").node();
+            var ctx = legendCanvas.getContext("2d");
+
+            var legendScale = d3.scaleLinear()
+                .domain([0, legendWidth])
+                .range([lowestImbalance, highestImbalance]);
+
+            for (var i = 0; i < legendWidth; ++i) {
+                ctx.fillStyle = colorScale(legendScale(i));
+                ctx.fillRect(i, 0, 1, legendHeight);
+            }
+
+            d3.select("#lowestImbalance").text("Lowest: " + lowestImbalance);
+            d3.select("#highestImbalance").text("Highest: " + highestImbalance);
+
+
+            function showPopup(countryName) {
+                var popup = d3.select("#popup");
+                popup.style("visibility", "visible");
+
+                // Clear existing treemap content
+                popup.select("#treemap").html("");
+
+                // Load and process hierarchical data
+                d3.json("output.json").then(function (data) {
+                    // Constants for SVG dimensions
+                    const width = 450;
+                    const height = 450;
+
+                    // Create SVG element
+                    const svg = d3.select("#treemap")
+                        .attr("viewBox", [0.5, -30.5, width, height + 30])
+                        .attr("width", width)
+                        .attr("height", height + 30)
+                        .attr("style", "max-width: 100%; height: auto;")
+                        .style("font", "10px sans-serif");
+
+                    // Function to compute treemap layout
+                    function tile(node, x0, y0, x1, y1) {
+                        d3.treemapBinary(node, 0, 0, width, height);
+                        for (const child of node.children) {
+                            child.x0 = x0 + child.x0 / width * (x1 - x0);
+                            child.x1 = x0 + child.x1 / width * (x1 - x0);
+                            child.y0 = y0 + child.y0 / height * (y1 - y0);
+                            child.y1 = y0 + child.y1 / height * (y1 - y0);
+                        }
+                    }
+
+                    // Create hierarchical data structure
+                    const hierarchy = d3.hierarchy(data)
+                        .sum(d => d.value)
+                        .sort((a, b) => b.value - a.value);
+
+                    // Find the country  node
+                    const ChosenNode = hierarchy.descendants().find(d => d.data.name === countryName);
+
+                    if (!ChosenNode) {
+                        console.error("Chosen node not found.");
+                        return;
+                    }
+
+                    const newRoot = d3.hierarchy({
+                        name: countryName,
+                        children: ChosenNode.data.children
+                    }).sum(d => d.value)
+                        .sort((a, b) => b.value - a.value);
+
+                    const root = d3.treemap().tile(tile)(newRoot);
+
+                    // Create scales for positioning
+                    const x = d3.scaleLinear().rangeRound([0, width]);
+                    const y = d3.scaleLinear().rangeRound([0, height]);
+
+                    // Function to render the treemap
+                    function render(group, root) {
+                        const node = group
+                            .selectAll("g")
+                            .data(root.children.concat(root))
+                            .join("g");
+
+                        node.filter(d => d === root ? d.parent : d.children)
+                            .attr("cursor", "pointer")
+                            .on("click", (event, d) => d === root ? zoomout(group, root) : zoomin(svg, group, d));
+
+                        node.append("title")
+                            .text(d => `${name(d)}\n${format(d.value)}`);
+
+                        node.append("rect")
+                            .attr("id", d => (d.leafUid = uid()))
+                            .attr("fill", d => d === root ? "#fff" : d.children ? "#f57d4b" : "#fed180")
+                            .attr("stroke", "#fff");
+
+                        const textData = node.append("text")
+                            .attr("font-weight", d => d === root ? "bold" : null)
+                            .attr("x", 3)
+                            .attr("y", 13) // Adjust the Y position to fit within the rectangle
+                            .selectAll("tspan")
+                            .data(d => wrapText(d.data.name, format(d.value)))
+                            .join("tspan")
+                            .attr("x", 3)
+                            .attr("dy", (d, i) => i === 0 ? 0 : "1.2em") // Adjust line spacing
+                            .text(d => d);
+
+                        group.call(position, root);
+                    }
+
+                    function position(group, root) {
+                        group.selectAll("g")
+                            .attr("transform", d => d === root ? `translate(0,-30)` : `translate(${x(d.x0)},${y(d.y0)})`)
+                            .select("rect")
+                            .attr("width", d => d === root ? width : x(d.x1) - x(d.x0))
+                            .attr("height", d => d === root ? 30 : y(d.y1) - y(d.y0));
+                    }
+
+                    // Function to zoom in to a node
+                    function zoomin(svg, group, d) {
+                        const group0 = group.attr("pointer-events", "none");
+                        const group1 = group = svg.append("g").call(render, d);
+
+                        x.domain([d.x0, d.x1]);
+                        y.domain([d.y0, d.y1]);
+
+                        svg.transition()
+                            .duration(750)
+                            .call(t => group0.transition(t).remove()
+                                .call(position, d.parent))
+                            .call(t => group1.transition(t)
+                                .attrTween("opacity", () => d3.interpolate(0, 1))
+                                .call(position, d));
+                    }
+
+                    // Function to zoom out to parent node
+                    function zoomout(group, d) {
+                        const group0 = group.attr("pointer-events", "none");
+                        const group1 = group = svg.insert("g", "*").call(render, d.parent);
+
+                        x.domain([d.parent.x0, d.parent.x1]);
+                        y.domain([d.parent.y0, d.parent.y1]);
+
+                        svg.transition()
+                            .duration(750)
+                            .call(t => group0.transition(t).remove()
+                                .attrTween("opacity", () => d3.interpolate(1, 0))
+                                .call(position, d))
+                            .call(t => group1.transition(t)
+                                .call(position, d.parent));
+                    }
+
+                    // Unique ID generator function
+                    function uid() {
+                        let id = 0;
+                        return function () {
+                            return "id-" + id++;
+                        };
+                    }
+
+                    // Function to wrap text
+                    function wrapText(name, value) {
+                        const maxLength = 50; // Adjust the length as needed
+                        const words = name.split(" ");
+                        const lines = [];
+                        let line = [];
+
+                        words.forEach(word => {
+                            if ((line.join(" ") + " " + word).length > maxLength) {
+                                lines.push(line.join(" "));
+                                line = [word];
+                            } else {
+                                line.push(word);
+                            }
+                        });
+
+                        lines.push(line.join(" "));
+                        lines.push(value);
+                        return lines;
+                    }
+
+                    // Function to format node name
+                    const name = d => d.ancestors().reverse().map(d => d.data.name).join("/");
+
+                    // Format function for node values
+                    const format = d3.format(",d");
+
+                    // Call render function to initially render the treemap
+                    svg.append("g")
+                        .call(render, root);
+                });
+            }
+
+
+            // Example data for bar chart
+            const margin = { top: 50, right: 40, bottom: 40, left: 120 },
+                width = 700 - margin.left - margin.right,
+                height = 400 - margin.top - margin.bottom;
+
+            const svg = d3.select("#barChart")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+
+            d3.json("asean_trade_data.json").then(data => {
+                const years = Object.keys(data).filter(year => +year >= 2015 && +year <= 2022);
+                let selectedYear = years[0];
+
+
+                // d3.select("#yearSlider").on("input", function () {
+                //     var year = this.value;
+                //     d3.select("#yearLabel").text(year);
+                //     updateChart(data[year])
+
+
+                // });
+
+                updateChart(data[selectedYear]);
+
+                function updateChart(data) {
+                    svg.selectAll("*:not(.title)").remove();
+
+                    const transformedData = data.map(d => ({ ...d, value: d.value / 1e6 }));
+
+                    const x = d3.scaleLinear()
+                        .domain([0, 240])
+                        .range([0, width]);
+
+                    const y = d3.scaleBand()
+                        .domain(transformedData.map(d => d.country))
+                        .range([0, height])
+                        .padding(0.2);
+
+                    const maxValue = d3.max(transformedData, d => d.value);
+                    const minValue = d3.min(transformedData, d => d.value);
+
+
+                    const tooltip = d3.select("body").append("div")
+                        .attr("class", "tooltip");
+
+                    svg.selectAll(".bar")
+                        .data(transformedData)
+                        .enter().append("rect")
+                        .attr("class", "bar")
+                        .attr("x", x(0))
+                        .attr("y", d => y(d.country))
+                        .attr("width", d => x(d.value))
+                        .attr("height", y.bandwidth())
+                        .on("mouseover", function (event, d) {
+                            tooltip.transition().duration(200).style("opacity", .9);
+                            tooltip.html(`<strong>Country:</strong> ${d.country}<br><strong>Total Import Trade Value:</strong> ${d.value.toFixed(1)}M`)
+                                .style("left", (event.pageX + 10) + "px")
+                                .style("top", (event.pageY - 20) + "px");
+                            d3.select(this).classed("hovered", true);
+                        })
+                        .on("mousemove", function (event) {
+                            tooltip.style("top", (event.pageY - 20) + "px")
+                                .style("left", (event.pageX + 10) + "px");
+                        })
+                        .on("mouseout", function (event, d) {
+                            tooltip.transition().duration(500).style("opacity", 0);
+                            d3.select(this).classed("hovered", false);
+                        });
+
+
+                    svg.selectAll(".label_year")
+                        .data(transformedData.filter(d => d.value === maxValue || d.value === minValue))
+                        .enter().append("text")
+                        .attr("class", "label")
+                        .attr("x", d => x(d.value) + 10)
+                        .attr("y", d => y(d.country) + y.bandwidth() / 2)
+                        .attr("dy", ".35em")
+                        .text(d => d.value.toFixed(1) + "M");
+
+                    svg.append("g")
+                        .attr("class", "y-axis")
+                        .call(d3.axisLeft(y).tickSize(0))
+                        .selectAll("text")
+                        .attr("dy", ".35em")
+                        .attr("dx", "-.8em")
+                        .style("text-anchor", "end");
+
+                    svg.append("g")
+                        .attr("class", "x-axis")
+                        .attr("transform", `translate(0,${height})`)
+                        .call(d3.axisBottom(x).tickValues([0, 40, 80, 120, 160, 200, 240]).tickFormat(d => d + "M"));
+                }
+
+                // d3.select("#yearSlider").on("input", function () {
+                //     var year = this.value;
+                //     d3.select("#yearLabel").text(year);
+                //     updateMap(year);
+                //     updateChart(data[year]);
+                // });
+
+                d3.select("#yearSlider").on("input", function () {
+                    var year = this.value;
+                    d3.select("#yearLabel").text(year);
+                    // Update the titles with the selected year
+                    d3.select("#mapTitle").text(`Yearly Trade Imbalance For ${year}`);
+                    d3.select("#barchartTitle").text(`Total Yearly Import Trade Values (USD) For ${year}`);
+                    updateMap(year);
+                    updateChart(data[year]);
+                });
+
+            });
+
+        });
+
+
+
+
+
+
+    </script>
+</body>
+
+</html>

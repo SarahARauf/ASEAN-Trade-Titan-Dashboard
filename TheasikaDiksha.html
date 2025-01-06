@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- THIS IS CURRENTLY BEING MODIFIED AND IMPROVED FOR READABILITY AND REUSABILITY -->
+
+<head>
+    <meta charset="UTF-8">
+    <title>Combined Visualizations</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        /* Entire body */
+        body { 
+            font-family: Arial, sans-serif;
+        }
+
+        /* Tool tip for all */
+                .tooltip {
+            position: absolute;
+            text-align: center;
+            width: auto;
+            height: auto;
+            padding: 12px;
+            font: 14px sans-serif;
+            background: lightgrey;
+            border: 0;
+            border-radius: 4px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+         /* Navigation bar styling */
+         nav {
+            background-color: #333;
+            overflow: hidden;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        nav ul li {
+            display: inline;
+            margin-right: 10px;
+        }
+
+        nav ul li a {
+            display: inline-block;
+            color: white;
+            text-align: center;
+            padding: 14px 20px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #575757;
+        }
+
+
+
+
+        /* Waffle chart */
+        .waffle-chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .waffle-chart-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin: 10px;
+        }
+
+        .waffle-chart {
+            width: 220px;
+            height: 220px;
+            margin: 10px;
+        }
+
+        .waffle {
+            width: 18px;
+            height: 18px;
+            float: left;
+        }
+
+        /* .label {
+            font-size: 12px;
+            font-weight: bold;
+            background-color: white;
+            padding: 2px;
+        } */
+
+
+        /* For controls for waffle chart and line graphs*/
+
+        /* Controls for waffle chart and import/export charts */
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+
+        .label1 {
+            color: rgb(224, 70, 50);
+        }
+
+        .label2 {
+            color: rgb(101, 188, 97);
+        }
+
+
+        /* Waffle chart legends and title */
+
+        .waffle-chart-title {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            margin-right: 20px;
+        }
+
+        .legend-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin: 0 20px;
+        }
+
+        .legend {
+            display: flex;
+            flex-direction: column;
+            margin: 10px;
+        }
+
+        .legend-item {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+        }
+
+
+
+
+        /* .label_year {
+            font-size: 12px;
+            font-weight: bold;
+        } */
+
+        /* .axis_year-label {
+            font-size: 12px;
+            font-weight: bold;
+        } */
+
+        /* .y-axis_year .tick text {
+            font-size: 12px;
+        } */
+
+        /* .title_year {
+            font-size: 20px;
+            font-weight: bold;
+            text-anchor: middle;
+        } */
+
+        /* Line chart */
+        .axis path,
+        .axis line {
+            fill: none;
+            shape-rendering: crispEdges;
+        }
+
+        /* Line chart */
+        .line {
+            fill: none;
+            stroke-width: 2px;
+        }
+
+        /* Line chart */
+        .country1 {
+            stroke: rgb(224, 70, 50)
+        }
+
+        /* Line chart */
+        .country2 {
+            stroke: rgb(101, 188, 97);
+        }
+
+        /* Line chart */
+        .charts-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Line chart */
+        .chart-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* Line chart */
+        .chart svg {
+            width: 600px;
+            height: 400px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="text-align: center;">ASEAN TRADE TITAN</h1>
+    <h2 style="text-align: center;">Which ASEAN Country Leads the Global Trade Market?</h2>
+
+
+
+    <nav>
+        <ul>
+            <li><a href="Sarah.html">Yearly Overview</a></li>
+            <li><a href="TheasikaDiksha.html">Country Comparison</a></li>
+        </ul>
+    </nav>
+
+
+    <script src="southeast-asia.json"></script>
+
+
+
+
+
+
+
+    <div class="controls">
+        <label for="country1" class="label1">Select Country 1:</label>
+        <select id="country1"></select>
+        <label for="country2" class="label2">Select Country 2:</label>
+        <select id="country2"></select>
+    </div>
+    <div class="waffle-chart-container">
+        <div class="waffle-chart-wrapper">
+            <div id="title-country1" class="waffle-chart-title">Country 1 Export Resources</div>
+            <div id="waffle-country1" class="waffle-chart"></div>
+        </div>
+        <div class="legend-container">
+            <div id="legend" class="legend"></div>
+        </div>
+        <div class="waffle-chart-wrapper">
+            <div id="title-country2" class="waffle-chart-title">Country 2 Export Resources</div>
+            <div id="waffle-country2" class="waffle-chart"></div>
+        </div>
+    </div>
+    <div class="charts-container">
+        <div id="import-chart" class="chart-wrapper">
+            <h3>Import Trade Over the Years</h3>
+            <div class="chart"></div>
+        </div>
+        <div id="export-chart" class="chart-wrapper">
+            <h3>Export Trade Over the Years</h3>
+            <div class="chart"></div>
+        </div>
+    </div>
+
+    <script>
+
+
+
+        //Generate colorMap for waffle chart
+        function generateColorMap(resources) {
+            const redShades = [
+                "rgb(254, 209, 128)",  // Light Red
+                "rgb(245, 125, 75)",    // Medium Red
+                "rgb(176, 11, 38)"       // Dark Red
+            ];
+
+            const greenShades = [
+                "rgb(223, 241, 150)",  // Light Green
+                "rgb(115, 194, 100)",  // Medium Green
+                "rgb(6, 115, 61)"       // Dark Green
+            ];
+
+            const colors = redShades.concat(greenShades);
+
+            return resources.reduce((map, resource, i) => {
+                map[resource] = colors[i % colors.length];
+                return map;
+            }, {});
+        }
+
+        //Handle changes to the wafflechart
+
+        function updateWaffleChart(data, selectedCountry, elementId, colorMap) {
+            const filteredData = data.filter(d => d.Exporter === selectedCountry && d['Exporter region'] === "Southeast Asia");
+
+            const resourceCounts = d3.rollups(filteredData, v => v.length, d => d.Resource)
+                .map(d => ({ resource: d[0], count: d[1] }));
+
+            const resources = Array.from(new Set(data.map(d => d.Resource))).sort((a, b) => a.localeCompare(b));
+
+            const totalCount = d3.sum(resourceCounts, d => d.count);
+            if (totalCount === 0) return;
+
+            const width = 220, height = 220;
+            const cellSize = 18;
+            const cellSpacing = 2;
+            const cellsPerRow = Math.floor(width / (cellSize + cellSpacing));
+            const totalCells = cellsPerRow * Math.floor(height / (cellSize + cellSpacing));
+            const waffleData = [];
+
+            resourceCounts.forEach(d => {
+                const numCells = Math.round((d.count / totalCount) * totalCells);
+                for (let j = 0; j < numCells; j++) {
+                    waffleData.push({ resource: d.resource, count: d.count, index: resources.indexOf(d.resource) });
+                }
+            });
+
+
+
+            const svg = d3.select(`#${elementId}`).html("").append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+            for (let i = 0; i <= cellsPerRow; i++) {
+                svg.append("line")
+                    .attr("x1", i * (cellSize + cellSpacing))
+                    .attr("y1", 0)
+                    .attr("x2", i * (cellSize + cellSpacing))
+                    .attr("y2", height)
+                    .attr("stroke", "#ddd");
+            }
+            for (let i = 0; i <= Math.floor(height / (cellSize + cellSpacing)); i++) {
+                svg.append("line")
+                    .attr("x1", 0)
+                    .attr("y1", i * (cellSize + cellSpacing))
+                    .attr("x2", width)
+                    .attr("y2", i * (cellSize + cellSpacing))
+                    .attr("stroke", "#ddd");
+            }
+
+            const tooltip = d3.select("body").append("div")
+                .attr("class", "tooltip");
+
+            svg.selectAll("rect")
+                .data(waffleData)
+                .enter().append("rect")
+                .attr("x", (d, i) => (i % cellsPerRow) * (cellSize + cellSpacing))
+                .attr("y", (d, i) => Math.floor(i / cellsPerRow) * (cellSize + cellSpacing))
+                .attr("width", cellSize)
+                .attr("height", cellSize)
+                .attr("fill", d => colorMap[d.resource])
+                .style("opacity", 0)
+                .transition()
+                .duration(1000)
+                .style("opacity", 1);
+
+            svg.selectAll("rect")
+                .on("mouseover", function (event, d) {
+                    tooltip.transition().duration(200).style("opacity", .9);
+                    tooltip.html(`Resource: ${d.resource}<br/>Count: ${d.count}`)
+                        .style("left", `${event.pageX + 5}px`)
+                        .style("top", `${event.pageY - 28}px`);
+                })
+                .on("mouseout", function () {
+                    tooltip.transition().duration(500).style("opacity", 0);
+                });
+        }
+
+        function updateLegend(elementId, resources, colorMap) {
+            const legend = d3.select(`#${elementId}`).html("");
+            resources.forEach(resource => {
+                const legendItem = legend.append("div").attr("class", "legend-item");
+                legendItem.append("div").attr("class", "legend-color").style("background-color", colorMap[resource]);
+                legendItem.append("div").text(resource);
+            });
+        }
+
+        function calculateAverage(data, valueKey) {
+            var dataByYear = d3.groups(data, d => d.Year);
+            return dataByYear.map(function (yearData) {
+                var year = yearData[0];
+                var values = yearData[1].map(d => d[valueKey]);
+                var avgValue = d3.mean(values);
+                return { Year: year, [valueKey]: avgValue };
+            }).sort((a, b) => a.Year - b.Year); // Ensure data is sorted by year
+        }
+
+        function fillMissingYears(data, years, valueKey) {
+            var yearSet = new Set(data.map(d => d.Year.getFullYear()));
+            years.forEach(year => {
+                if (!yearSet.has(year)) {
+                    data.push({ Year: new Date(year, 0, 1), [valueKey]: 0 });
+                }
+            });
+            return data.sort((a, b) => a.Year - b.Year);
+        }
+
+        function updateImportChart(data, selectedCountry1, selectedCountry2) {
+            var filteredData1 = data.filter(d => d.Exporter === selectedCountry1);
+            var filteredData2 = data.filter(d => d.Exporter === selectedCountry2);
+
+            var years = d3.range(2015, 2023);
+
+            var averageData1 = fillMissingYears(calculateAverage(filteredData1, 'Value_ImportTotal'), years, 'Value_ImportTotal');
+            var averageData2 = fillMissingYears(calculateAverage(filteredData2, 'Value_ImportTotal'), years, 'Value_ImportTotal');
+
+            var marginLineChart = { top: 30, right: 150, bottom: 50, left: 70 },
+                width = 600 - marginLineChart.left - marginLineChart.right,
+                height = 400 - marginLineChart.top - marginLineChart.bottom;
+
+            var x = d3.scaleTime().range([0, width]);
+            var yImport = d3.scaleLinear().range([height, 0]);
+
+            var valuelineImport = d3.line()
+                .x(function (d) { return x(d.Year); })
+                .y(function (d) { return yImport(d.Value_ImportTotal); });
+
+            var svgImport = d3.select("#import-chart .chart svg");
+            if (!svgImport.empty()) svgImport.remove();
+            svgImport = d3.select("#import-chart .chart")
+                .append("svg")
+                .attr("width", width + marginLineChart.left + marginLineChart.right)
+                .attr("height", height + marginLineChart.top + marginLineChart.bottom)
+                .append("g")
+                .attr("transform", "translate(" + marginLineChart.left + "," + marginLineChart.top + ")");
+
+            var tooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+            x.domain(d3.extent(years, function (d) { return new Date(d, 0, 1); }));
+            yImport.domain([0, d3.max([...averageData1, ...averageData2], d => d.Value_ImportTotal)]);
+
+            var formatMillions = d3.format(".2s");
+
+            svgImport.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .attr("class", "x-axis")
+                .call(d3.axisBottom(x));
+
+            svgImport.append("g")
+                .attr("class", "y-axis")
+                .call(d3.axisLeft(yImport)
+                    .tickFormat(function (d) { return formatMillions(d).replace("M", "M"); })
+                );
+
+            if (averageData1.length) {
+                var path1 = svgImport.append("path")
+                    .data([averageData1])
+                    .attr("class", "line country1")
+                    .attr("d", valuelineImport);
+
+                var totalLength1 = path1.node().getTotalLength();
+
+                path1.attr("stroke-dasharray", totalLength1 + " " + totalLength1)
+                    .attr("stroke-dashoffset", totalLength1)
+                    .transition()
+                    .duration(2000)
+                    .ease(d3.easeLinear)
+                    .attr("stroke-dashoffset", 0)
+                    .on("end", function () {
+                        svgImport.selectAll("circle.country1")
+                            .data(averageData1)
+                            .enter().append("circle")
+                            .attr("class", "country1")
+                            .attr("r", 3.5)
+                            .attr("cx", function (d) { return x(d.Year); })
+                            .attr("cy", function (d) { return yImport(d.Value_ImportTotal); })
+                            .on("mouseover", function (event, d) {
+                                tooltip.transition()
+                                    .duration(200)
+                                    .style("opacity", .9);
+                                tooltip.html("<strong>Country:</strong> " + selectedCountry1 + "<br/>" +
+                                    "<strong>Year:</strong> " + d.Year.getFullYear() + "<br/>" +
+                                    "<strong>Import Total:</strong> " + formatMillions(d.Value_ImportTotal) + " USD")
+                                    .style("left", (event.pageX + 5) + "px")
+                                     .style("top", (event.pageY - 28) + "px");
+                            })
+                            .on("mouseout", function (d) {
+                                tooltip.transition()
+                                    .duration(500)
+                                    .style("opacity", 0);
+                            });
+
+                        svgImport.append("text")
+                            .attr("x", x(new Date(2022, 0, 1)) + 5)
+                            .attr("y", yImport(averageData1[averageData1.length - 1].Value_ImportTotal))
+                            .attr("dy", ".35em")
+                            .attr("text-anchor", "start")
+                            .attr("class", "label")
+                            .style("fill", "rgb(224, 70, 50)")
+                            .text(selectedCountry1);
+                    });
+            }
+
+            if (averageData2.length) {
+                var path2 = svgImport.append("path")
+                    .data([averageData2])
+                    .attr("class", "line country2")
+                    .attr("d", valuelineImport);
+
+                var totalLength2 = path2.node().getTotalLength();
+
+                path2.attr("stroke-dasharray", totalLength2 + " " + totalLength2)
+                    .attr("stroke-dashoffset", totalLength2)
+                    .transition()
+                    .duration(2000)
+                    .ease(d3.easeLinear)
+                    .attr("stroke-dashoffset", 0)
+                    .on("end", function () {
+                        svgImport.selectAll("circle.country2")
+                            .data(averageData2)
+                            .enter().append("circle")
+                            .attr("class", "country2")
+                            .attr("r", 3.5)
+                            .attr("cx", function (d) { return x(d.Year); })
+                            .attr("cy", function (d) { return yImport(d.Value_ImportTotal); })
+                            .on("mouseover", function (event, d) {
+                                tooltip.transition()
+                                    .duration(200)
+                                    .style("opacity", .9);
+                                tooltip.html("<strong>Country:</strong> " + selectedCountry2 + "<br/>" +
+                                    "<strong>Year:</strong> " + d.Year.getFullYear() + "<br/>" +
+                                    "<strong>Import Total:</strong> " + formatMillions(d.Value_ImportTotal) + " USD")
+                                    .style("left", (event.pageX + 5) + "px")
+                                    .style("top", (event.pageY - 28) + "px");
+                            })
+                            .on("mouseout", function (d) {
+                                tooltip.transition()
+                                    .duration(500)
+                                    .style("opacity", 0);
+                            });
+
+                        svgImport.append("text")
+                            .attr("x", x(new Date(2022, 0, 1)) + 5)
+                            .attr("y", yImport(averageData2[averageData2.length - 1].Value_ImportTotal))
+                            .attr("dy", ".35em")
+                            .attr("text-anchor", "start")
+                            .attr("class", "label")
+                            .style("fill", "rgb(101, 188, 97)")
+                            .text(selectedCountry2);
+                    });
+            }
+
+            svgImport.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - marginLineChart.left)
+                .attr("x", 0 - (height / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Import Total (USD)");
+
+            svgImport.append("text")
+                .attr("transform", "translate(" + (width / 2) + " ," + (height + marginLineChart.top + 20) + ")")
+                .style("text-anchor", "middle")
+                .text("Year");
+        }
+
+        function updateExportChart(data, selectedCountry1, selectedCountry2) {
+            var filteredData1 = data.filter(d => d.Exporter === selectedCountry1);
+            var filteredData2 = data.filter(d => d.Exporter === selectedCountry2);
+
+            var years = d3.range(2015, 2023);
+
+            var averageData1 = fillMissingYears(calculateAverage(filteredData1, 'Value_ExportTotal'), years, 'Value_ExportTotal');
+            var averageData2 = fillMissingYears(calculateAverage(filteredData2, 'Value_ExportTotal'), years, 'Value_ExportTotal');
+
+            var marginLineChart = { top: 30, right: 150, bottom: 50, left: 70 },
+                width = 600 - marginLineChart.left - marginLineChart.right,
+                height = 400 - marginLineChart.top - marginLineChart.bottom;
+
+            var x = d3.scaleTime().range([0, width]);
+            var yExport = d3.scaleLinear().range([height, 0]);
+
+            var valuelineExport = d3.line()
+                .x(function (d) { return x(d.Year); })
+                .y(function (d) { return yExport(d.Value_ExportTotal); });
+
+            var svgExport = d3.select("#export-chart .chart svg");
+            if (!svgExport.empty()) svgExport.remove();
+            svgExport = d3.select("#export-chart .chart")
+                .append("svg")
+                .attr("width", width + marginLineChart.left + marginLineChart.right)
+                .attr("height", height + marginLineChart.top + marginLineChart.bottom)
+                .append("g")
+                .attr("transform", "translate(" + marginLineChart.left + "," + marginLineChart.top + ")");
+
+            var tooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+            x.domain(d3.extent(years, function (d) { return new Date(d, 0, 1); }));
+            yExport.domain([0, d3.max([...averageData1, ...averageData2], d => d.Value_ExportTotal)]);
+
+            var formatMillions = d3.format(".2s");
+
+            svgExport.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .attr("class", "x-axis")
+                .call(d3.axisBottom(x));
+
+            svgExport.append("g")
+                .attr("class", "y-axis")
+                .call(d3.axisLeft(yExport)
+                    .tickFormat(function (d) { return formatMillions(d).replace("M", "M"); })
+                );
+
+            if (averageData1.length) {
+                var path1 = svgExport.append("path")
+                    .data([averageData1])
+                    .attr("class", "line country1")
+                    .attr("d", valuelineExport);
+
+                var totalLength1 = path1.node().getTotalLength();
+
+                path1.attr("stroke-dasharray", totalLength1 + " " + totalLength1)
+                    .attr("stroke-dashoffset", totalLength1)
+                    .transition()
+                    .duration(2000)
+                    .ease(d3.easeLinear)
+                    .attr("stroke-dashoffset", 0)
+                    .on("end", function () {
+                        svgExport.selectAll("circle.country1")
+                            .data(averageData1)
+                            .enter().append("circle")
+                            .attr("class", "country1")
+                            .attr("r", 3.5)
+                            .attr("cx", function (d) { return x(d.Year); })
+                            .attr("cy", function (d) { return yExport(d.Value_ExportTotal); })
+                            .on("mouseover", function (event, d) {
+                                tooltip.transition()
+                                    .duration(200)
+                                    .style("opacity", .9);
+                                tooltip.html("<strong>Country:</strong> " + selectedCountry1 + "<br/>" +
+                                    "<strong>Year:</strong> " + d.Year.getFullYear() + "<br/>" +
+                                    "<strong>Export Total:</strong> " + formatMillions(d.Value_ExportTotal) + " USD")
+                                    .style("left", (event.pageX + 5) + "px")
+                                    .style("top", (event.pageY - 28) + "px");
+                            })
+                            .on("mouseout", function (d) {
+                                tooltip.transition()
+                                    .duration(500)
+                                    .style("opacity", 0);
+                            });
+
+                        svgExport.append("text")
+                            .attr("x", x(new Date(2022, 0, 1)) + 5)
+                            .attr("y", yExport(averageData1[averageData1.length - 1].Value_ExportTotal))
+                            .attr("dy", ".35em")
+                            .attr("text-anchor", "start")
+                            .attr("class", "label")
+                            .style("fill", "rgb(224, 70, 50)")
+                            .text(selectedCountry1);
+                    });
+            }
+
+            if (averageData2.length) {
+                var path2 = svgExport.append("path")
+                    .data([averageData2])
+                    .attr("class", "line country2")
+                    .attr("d", valuelineExport);
+
+                var totalLength2 = path2.node().getTotalLength();
+
+                path2.attr("stroke-dasharray", totalLength2 + " " + totalLength2)
+                    .attr("stroke-dashoffset", totalLength2)
+                    .transition()
+                    .duration(2000)
+                    .ease(d3.easeLinear)
+                    .attr("stroke-dashoffset", 0)
+                    .on("end", function () {
+                        svgExport.selectAll("circle.country2")
+                            .data(averageData2)
+                            .enter().append("circle")
+                            .attr("class", "country2")
+                            .attr("r", 3.5)
+                            .attr("cx", function (d) { return x(d.Year); })
+                            .attr("cy", function (d) { return yExport(d.Value_ExportTotal); })
+                            .on("mouseover", function (event, d) {
+                                tooltip.transition()
+                                    .duration(200)
+                                    .style("opacity", .9);
+                                tooltip.html("<strong>Country:</strong> " + selectedCountry2 + "<br/>" +
+                                    "<strong>Year:</strong> " + d.Year.getFullYear() + "<br/>" +
+                                    "<strong>Export Total:</strong> " + formatMillions(d.Value_ExportTotal) + " USD")
+                                    .style("left", (event.pageX + 5) + "px")
+                                    .style("top", (event.pageY - 28) + "px");
+                            })
+                            .on("mouseout", function (d) {
+                                tooltip.transition()
+                                    .duration(500)
+                                    .style("opacity", 0);
+                            });
+
+                        svgExport.append("text")
+                            .attr("x", x(new Date(2022, 0, 1)) + 5)
+                            .attr("y", yExport(averageData2[averageData2.length - 1].Value_ExportTotal))
+                            .attr("dy", ".35em")
+                            .attr("text-anchor", "start")
+                            .attr("class", "label")
+                            .style("fill", "rgb(101, 188, 97)")
+                            .text(selectedCountry2);
+                    });
+            }
+
+            svgExport.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - marginLineChart.left)
+                .attr("x", 0 - (height / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Export Total (USD)");
+
+            svgExport.append("text")
+                .attr("transform", "translate(" + (width / 2) + " ," + (height + marginLineChart.top + 20) + ")")
+                .style("text-anchor", "middle")
+                .text("Year");
+        }
+
+        d3.csv("cleaned.csv").then(function (data) {
+            data.forEach(function (d) {
+                d.Year = d3.timeParse("%Y")(d.Year);
+                // d.Value_ImportTotal = d.Value_ImportTotal;
+                // d.Value_ExportTotal = d.Value_ExportTotal;
+            });
+
+            const filteredData = data.filter(d => {
+                const year = d.Year.getFullYear();
+                return year >= 2015 && year <= 2022 && (d['Importer region'] === 'Southeast Asia' || d['Exporter region'] === 'Southeast Asia');
+            });
+
+            const southeastAsiaData = filteredData.filter(d => d['Exporter region'] === "Southeast Asia");
+            const exportCountries = new Set(southeastAsiaData.map(d => d.Exporter));
+            const importCountries = new Set(filteredData.filter(d => d['Importer region'] === 'Southeast Asia').map(d => d.Importer));
+            const countries = [...new Set([...exportCountries, ...importCountries])].sort();
+            const resources = Array.from(new Set(filteredData.map(d => d.Resource))).sort((a, b) => a.localeCompare(b));
+
+            const colorMap = generateColorMap(resources);
+
+            const dropdown1 = d3.select("#country1");
+            const dropdown2 = d3.select("#country2");
+
+            dropdown1.selectAll("option")
+                .data(countries)
+                .enter().append("option")
+                .text(d => d)
+                .attr("value", d => d);
+
+            function updateCountry2Options() {
+                const selectedCountry1 = dropdown1.property("value");
+                const filteredCountries = countries.filter(d => d !== selectedCountry1);
+                dropdown2.selectAll("option").remove();
+                dropdown2.selectAll("option")
+                    .data(filteredCountries)
+                    .enter().append("option")
+                    .text(d => d)
+                    .attr("value", d => d);
+                if (filteredCountries.length > 0) {
+                    dropdown2.property("value", filteredCountries[0]);
+                }
+            }
+
+            function handleChange() {
+                const selectedCountry1 = dropdown1.property("value");
+                const selectedCountry2 = dropdown2.property("value");
+
+                if (selectedCountry1 && selectedCountry2) {
+                    document.getElementById("title-country1").innerText = `${selectedCountry1} Export Resources`;
+                    document.getElementById("title-country2").innerText = `${selectedCountry2} Export Resources`;
+
+                    updateWaffleChart(southeastAsiaData, selectedCountry1, 'waffle-country1', colorMap);
+                    updateWaffleChart(southeastAsiaData, selectedCountry2, 'waffle-country2', colorMap);
+                    updateLegend('legend', resources, colorMap);
+
+                    updateImportChart(filteredData, selectedCountry1, selectedCountry2);
+                    updateExportChart(filteredData, selectedCountry1, selectedCountry2);
+                }
+            }
+
+            dropdown1.on("change", function () {
+                updateCountry2Options();
+                handleChange();
+            });
+
+            dropdown2.on("change", handleChange);
+
+            if (countries.length > 1) {
+                dropdown1.property("value", countries[0]);
+                updateCountry2Options();
+                handleChange();
+            }
+        }).catch(function (error) {
+            console.error('Error loading or processing data:', error);
+        });
+    </script>
+</body>
+
+</html>
