@@ -211,7 +211,7 @@
         }
 
 
-        @media (max-width: 1330px) {
+        @media (max-width: 1200px) {
             .map-barchart-container {
                 flex-direction: column;
             }
@@ -277,7 +277,8 @@
 
     <script>
 
-
+        let lastTouchTime = 0;
+        const doubleTapDuration = 300; // Duration in milliseconds to consider as a double tap
 
         const margin = { top: 50, right: 40, bottom: 40, left: 120 },
              width = 500 - margin.left - margin.right,
@@ -287,7 +288,6 @@
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
                 .append("g")
-                .attr("transform", `translate(${margin.left},${margin.top})`);
 
 
         var mapG = mapSvg.append("g");
@@ -368,6 +368,42 @@
                         } else {
                             alert("No data available for " + countryName);
                         }
+                    })
+                    .on("touchstart", function (event, d) {
+                        const currentTime = new Date().getTime();
+                        const timeSinceLastTouch = currentTime - lastTouchTime;
+                        lastTouchTime = currentTime;
+
+                        if (timeSinceLastTouch < doubleTapDuration && timeSinceLastTouch > 0) {
+                            // Detected a double tap
+                            const countryName = d.properties.name;
+
+                            if (countryName) {
+                                showPopup(countryName);
+                            } else {
+                                alert("No data available for " + countryName);
+                            }
+
+                            // Prevent default touch behavior to avoid conflicts with other touch events
+                            event.preventDefault();
+                        } else {
+                            // Handle tooltip on single tap
+                            isTouching = true;
+                            const countryName = d.properties.name;
+                            const countryData = tradeData.find(entry => entry["Exporter"] === countryName && entry["Year"] == d3.select("#yearSlider").property("value"));
+
+                            tooltip.transition().duration(200).style("opacity", .9);
+                            tooltip.html("<strong>Country:</strong> " + countryName + "<br><strong>Trade Imbalance: </strong>" + (countryData ? countryData["Trade Imbalance"] : "No data"))
+                                .style("left", (event.changedTouches[0].pageX + 5) + "px")
+                                .style("top", (event.changedTouches[0].pageY - 28) + "px");
+
+                            setTimeout(() => {
+                                tooltip.transition().duration(500).style("opacity", 0);
+                            }, 3000); // Hide tooltip after 3 seconds
+                        }
+                    })
+                    .on("touchend", function () {
+                        isTouching = false;
                     });
             }
 
