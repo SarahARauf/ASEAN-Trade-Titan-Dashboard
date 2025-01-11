@@ -32,6 +32,7 @@
          nav {
             background-color: #333;
             overflow: hidden;
+            
         }
 
         nav ul {
@@ -109,6 +110,7 @@
 
         .map-barchart-container {
             display: flex;
+
             justify-content: center;
             align-items: center;
             margin-top: 20px;
@@ -119,6 +121,9 @@
             justify-content: center;
             align-items: center;
             flex-direction: column;
+            text-align: center;
+            /* width: 100%; */
+            overflow: hidden;
         }
 
         .map-wrapper {
@@ -139,6 +144,11 @@
             font-size: 20px;
             font-weight: bold;
             margin-bottom: 10px;
+        }
+
+        #map {
+            width: 500px;
+            height: 500px;
         }
 
         /* legend for chloropleth map */
@@ -172,7 +182,11 @@
             display: flex;
             justify-content: center;
             flex-direction: column;
-            margin: 10px;
+            text-align: center;
+            /* margin: 10px; */
+
+            /* width: 100%; */
+            overflow: hidden;
         }
 
         /* Bar chart */
@@ -180,6 +194,7 @@
             font-size: 20px;
             font-weight: bold;
             margin-bottom: 10px;
+            text-align: center;
         }
 
         #barChart {
@@ -193,6 +208,13 @@
 
         .hovered {
             fill: rgb(224, 70, 50);
+        }
+
+
+        @media (max-width: 1330px) {
+            .map-barchart-container {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -226,7 +248,7 @@
                     </div>
                 </div>
                 <!-- SVG for the map -->
-                <svg id="mapSvg"></svg>
+                <svg id="map"></svg>
             </div>
         </div>
 
@@ -256,41 +278,16 @@
     <script>
 
 
-        // Setup SVG container for the map
-        var mapWidth = 500;
-        var mapHeight = 500;
 
-        var mapSvg = d3.select("#mapSvg")
-            .attr("width", mapWidth)
-            .attr("height", mapHeight)
-            // .style("position", "absolute")
-            .style("top", 200)
-            .style("left", 100);
+        const margin = { top: 50, right: 40, bottom: 40, left: 120 },
+             width = 500 - margin.left - margin.right,
+             height = 500 - margin.top - margin.bottom;
 
-        // const margin = { top: 50, right: 40, bottom: 40, left: 120 },
-        //      width = 500 - margin.left - margin.right,
-        //      height = 500 - margin.top - margin.bottom;
-
-        // const mapSvg = d3.select("#mapSvg")
-        //         .attr("width", width + margin.left + margin.right)
-        //         .attr("height", height + margin.top + margin.bottom)
-        //         .append("g")
-        //         .attr("transform", `translate(${margin.left},${margin.top})`);
-
-
-
-
-        // const margin = { top: 50, right: 0, bottom: 40, left: 120 },
-        //      width = 500 - margin.left - margin.right,
-        //      height = 500 - margin.top - margin.bottom;
-
-        // const mapSvg = d3.select("#mapSvg")
-        //         .attr("width", width + margin.left + margin.right)
-        //         .attr("height", height + margin.top + margin.bottom)
-        //         .append("g")
-        //         .attr("transform", `translate(${margin.left},${margin.top})`);
-
-
+        const mapSvg = d3.select("#map")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
 
 
         var mapG = mapSvg.append("g");
@@ -572,7 +569,7 @@
             // Example data for bar chart
             const margin = { top: 50, right: 40, bottom: 40, left: 120 },
                 width = 700 - margin.left - margin.right,
-                height = 400 - margin.top - margin.bottom;
+                height = 500 - margin.top - margin.bottom;
 
             const svg = d3.select("#barChart")
                 .attr("width", width + margin.left + margin.right)
